@@ -1,0 +1,31 @@
+module rd_ptr_handler#(parameter N=4)(input rd_clk,rd_rst,rd_en,
+                                      input [N:0] gray_wr_ptr_sync,
+                                      output reg [N:0] bin_rd_ptr,gray_rd_ptr,
+                                      output reg empty);
+wire [N:0] gray_rd_ptr_next;
+wire [N:0] bin_rd_ptr_next;
+wire empty_next;
+  
+  //rd ptr increment
+  assign bin_rd_ptr_next =bin_rd_ptr + (rd_en & ~empty);
+  //bin->gray conversion
+  assign gray_rd_ptr_next=(bin_rd_ptr_next^(bin_rd_ptr_next>>1));
+  //empty logic
+  assign empty_next=(gray_wr_ptr_sync == gray_rd_ptr_next);
+                           
+  always @(posedge rd_clk or posedge rd_rst )
+                    begin
+                      if(rd_rst)
+                        begin
+                          empty<=1;
+                          bin_rd_ptr<=0;
+                          gray_rd_ptr <= 0;
+                        end
+                        else 
+                        begin
+                         bin_rd_ptr<= bin_rd_ptr_next;
+                         gray_rd_ptr <= gray_rd_ptr_next;
+                         empty <= empty_next;
+                        end
+                    end
+endmodule
