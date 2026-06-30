@@ -1,0 +1,24 @@
+module tb;
+parameter N=4;
+reg rd_clk,rst;
+reg [N:0] gray_wr_ptr,bin_rd_ptr;
+wire [N:0] gray_rd_ptr;
+wire empty;                                     
+
+
+rd_ptr_handler #(N)dut(.*);
+
+always #5 rd_clk=~rd_clk;
+
+initial begin
+    $dumpfile("rpt.vcd");
+    $dumpvars(1,tb);
+    $monitor("Time=%0t rst=%b bin_rd_ptr=%b gray_rd_ptr=%b gray_wr_ptr=%b empty=%b",$time,rst,bin_rd_ptr,gray_rd_ptr,gray_wr_ptr,empty);
+
+    rst=1;rd_clk=0;
+    #5 rst=0;bin_rd_ptr=5'b01010;gray_wr_ptr=5'b01111;
+    #10 bin_rd_ptr=5'b1010;gray_wr_ptr=5'b0011;
+    #20
+    $finish;
+  end
+endmodule
