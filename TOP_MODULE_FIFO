@@ -1,0 +1,69 @@
+`include "rd_ptr_handler.sv"
+`include "wr_ptr_handler.sv"
+`include "synchronizer.sv"
+module top#(parameter width=8,depth=16)
+  (input wr_clk,rd_clk,wr_rst,rd_rst,wr_en,rd_en,
+        input [width-1:0] din,
+        output reg [width-1:0] dout);
+
+        wire [$clog2(depth):0] bin_wr_ptr,bin_rd_ptr;
+
+        reg [width-1:0]mem[0:depth-1];
+
+        wire empty,full;
+        wire [$clog2(depth):0]gray_wr_ptr,gray_wr_sync_ptr;
+        wire [$clog2(depth):0]gray_rd_ptr,gray_rd_sync_ptr;
+
+ rd_ptr_handler #($clog2(depth))a(rd_clk,rd_rst,rd_en,gray_wr_sync_ptr,bin_rd_ptr,gray_rd_ptr,empty);
+ wr_ptr_handler #($clog2(depth))b(wr_clk,wr_rst,wr_en,gray_rd_sync_ptr,bin_wr_ptr,gray_wr_ptr,full);
+  synchronizer  #($clog2(depth))c(rd_clk,rd_rst,gray_wr_ptr,gray_wr_sync_ptr);
+  synchronizer  #($clog2(depth))d(wr_clk,wr_rst,gray_rd_ptr,gray_rd_sync_ptr);
+
+        //write operation
+        integer i;
+  always @(posedge wr_clk or posedge wr_rst)
+        begin
+          if(wr_rst)
+            begin
+                for(i=0;i<depth;i=i+1)
+                begin
+                    mem[i]<=0;
+                end
+               
+            end
+            else
+            begin
+                if(wr_en && !full)
+                begin
+                    mem[bin_wr_ptr[$clog2(depth)-1:0]]<=din;
+                   
+                end
+                else if(wr_en && full)
+                begin
+                    $display("ERROR:Cant write into full FIFO");
+                end
+            end
+        end
+
+        //read operation
+  always @(posedge rd_clk or posedge rd_rst)
+        begin
+          if(rd_rst)
+            begin
+                dout<=0;              
+            end
+            else 
+            begin
+                if(rd_en && !empty)
+                begin
+                dout<=mem[bin_rd_ptr[$clog2(depth)-1:0]];                
+                end
+                else if(rd_en && empty)
+                begin
+                    $display("ERROR:Cant Read from empty FIFO");
+                end
+            end
+        end
+        
+
+endmodule
