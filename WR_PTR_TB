@@ -1,0 +1,24 @@
+module tb;
+parameter N=4;
+reg wr_clk,rst;
+reg [N:0] gray_rd_ptr,bin_wr_ptr;
+wire [N:0] gray_wr_ptr;
+wire full;                                     
+
+
+wr_ptr_handler #(N)dut(.*);
+
+always #5 wr_clk=~wr_clk;
+
+initial begin
+    $dumpfile("wpt.vcd");
+    $dumpvars(1,tb);
+    $monitor("Time=%0t rst=%b bin_wr_ptr=%b gray_wr_ptr=%b gray_rd_ptr=%b full=%b",$time,rst,bin_wr_ptr,gray_wr_ptr,gray_rd_ptr,full);
+
+    rst=1;wr_clk=0;
+    #5 rst=0;bin_wr_ptr=5'b01010;gray_rd_ptr=5'b10111;
+    #10 bin_wr_ptr=5'b1010;gray_rd_ptr=5'b0011;
+    #20
+    $finish;
+  end
+endmodule
