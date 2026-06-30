@@ -1,0 +1,16 @@
+module synchronizer #(parameter N=4) (input clk,rst,input [N:0]ptr,output reg  [N:0]sync_ptr);
+  reg [N:0] q;
+  always @ (posedge clk or posedge rst)
+  begin
+    if(rst)
+      begin
+        q<=0;
+        sync_ptr<=0;
+      end
+    else
+      begin
+        q<=ptr;
+        sync_ptr<=q;
+      end
+  end
+endmodule
