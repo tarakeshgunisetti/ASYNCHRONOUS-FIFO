@@ -1,0 +1,38 @@
+module top_testbench;
+  
+  parameter width=8,depth=16;
+  reg wr_clk,rd_clk,wr_rst,rd_rst,wr_en,rd_en;
+  reg [width-1:0] din;
+  wire [width-1:0] dout;
+  
+  always #5 wr_clk=~wr_clk;
+  always #5 rd_clk=~rd_clk;
+  
+  top #(width,depth)DUT(.*);
+  
+  integer i;
+  initial begin
+    $monitor("time=%0t wr_en=%b rd_en=%b din=%0d dout=%0d full=%b empty=%b wr_ptr=%0d rd_ptr=%0d",$time,wr_en,rd_en,din,dout,DUT.full,DUT.empty,DUT.bin_wr_ptr,DUT.bin_rd_ptr);
+    
+    wr_clk=0;rd_clk=0;wr_en=0;rd_en=0;
+    
+    wr_rst=1;rd_rst=1;
+    
+    #25 wr_rst=0;wr_en=1;rd_rst=0;
+    for(i=0;i<depth;i=i+1)
+      begin
+        din=i;
+        #10;
+       
+      end
+    din<=16;
+    
+    #10 rd_en=1;wr_en=0;
+    
+    #200
+    
+    $finish;
+  end
+endmodule
+    
+    
