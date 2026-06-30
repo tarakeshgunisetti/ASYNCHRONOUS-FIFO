@@ -1,0 +1,21 @@
+module tb;
+  parameter N=4;
+  reg clk,rst;
+  reg [N-1:0] ptr;
+  wire [N-1:0] sync_ptr;
+  synchronizer #(N)dut(.*);
+  initial clk=0;
+  always #5 clk=~clk;
+  initial begin
+    $dumpfile("fifo.vcd");
+    $dumpvars(1,tb);
+    $monitor("Time=%0t rst=%0b ptr=%b sync_ptr=%b",$time,rst,ptr,sync_ptr);
+
+    rst=1;
+    #5 rst=0;ptr=4'b1010;
+    #10 ptr=4'b1100;
+    #10 ptr=4'b1001;
+    #20
+    $finish;
+  end
+endmodule
